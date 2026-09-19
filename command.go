@@ -188,6 +188,11 @@ type Command struct {
 	// completionCommandGroupID is the group id for the completion command
 	completionCommandGroupID string
 
+	// skipRequiredFlagValidation marks commands built internally by cobra
+	// (help and completion commands) so that required flags inherited from
+	// their parents don't need to be set to use them.
+	skipRequiredFlagValidation bool
+
 	// versionTemplate is the version template defined by user.
 	versionTemplate *tmplFunc
 
@@ -1178,7 +1183,7 @@ func (c *Command) ValidateArgs(args []string) error {
 
 // ValidateRequiredFlags validates all required flags are present and returns an error otherwise
 func (c *Command) ValidateRequiredFlags() error {
-	if c.DisableFlagParsing {
+	if c.DisableFlagParsing || c.skipRequiredFlagValidation {
 		return nil
 	}
 
@@ -1308,6 +1313,7 @@ Simply type ` + c.DisplayName() + ` help [path to command] for full details.`,
 			},
 			GroupID: c.helpCommandGroupID,
 		}
+		c.helpCommand.skipRequiredFlagValidation = true
 	}
 	c.RemoveCommand(c.helpCommand)
 	c.AddCommand(c.helpCommand)

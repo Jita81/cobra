@@ -927,6 +927,12 @@ to your powershell profile.
 	}
 
 	completionCmd.AddCommand(bash, zsh, fish, powershell)
+
+	completionCmd.skipRequiredFlagValidation = true
+	bash.skipRequiredFlagValidation = true
+	zsh.skipRequiredFlagValidation = true
+	fish.skipRequiredFlagValidation = true
+	powershell.skipRequiredFlagValidation = true
 }
 
 func findFlag(cmd *Command, name string) *pflag.Flag {
