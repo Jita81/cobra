@@ -1150,7 +1150,11 @@ func (c *Command) ExecuteC() (cmd *Command, err error) {
 		// Always show help if requested, even if SilenceErrors is in
 		// effect
 		if errors.Is(err, flag.ErrHelp) {
-			cmd.HelpFunc()(cmd, args)
+			helpArgs := cmd.Flags().Args()
+			if cmd.DisableFlagParsing {
+				helpArgs = flags
+			}
+			cmd.HelpFunc()(cmd, helpArgs)
 			return cmd, nil
 		}
 
@@ -1291,7 +1295,7 @@ Simply type ` + c.DisplayName() + ` help [path to command] for full details.`,
 				return completions, ShellCompDirectiveNoFileComp
 			},
 			Run: func(c *Command, args []string) {
-				cmd, _, e := c.Root().Find(args)
+				cmd, remainingArgs, e := c.Root().Find(args)
 				if cmd == nil || e != nil {
 					c.Printf("Unknown help topic %#q\n", args)
 					CheckErr(c.Root().Usage())
@@ -1303,7 +1307,7 @@ Simply type ` + c.DisplayName() + ` help [path to command] for full details.`,
 
 					cmd.InitDefaultHelpFlag()    // make possible 'help' flag to be shown
 					cmd.InitDefaultVersionFlag() // make possible 'version' flag to be shown
-					CheckErr(cmd.Help())
+					cmd.HelpFunc()(cmd, remainingArgs)
 				}
 			},
 			GroupID: c.helpCommandGroupID,
